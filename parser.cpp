@@ -69,8 +69,7 @@ Statement* Parser::parseLetStatement() {
 
     if (!expectPeek(TokenType::ASSIGN)) return nullptr;
 
-    // Skip until semicolon
-    // TODO add expression handling
+    // TODO: add expression handling
     if (!curTokenIs(TokenType::SEMICOLON)) nextToken();
     return s;
 }
@@ -79,7 +78,7 @@ Statement* Parser::parseReturnStatement() {
     ReturnStatement* s = new ReturnStatement(curToken);
     nextToken();
 
-    // TODO add expression handling
+    // TODO: add expression handling
     if (!curTokenIs(TokenType::SEMICOLON)) nextToken();
     return s;
 }
