@@ -1,14 +1,9 @@
+#ifndef TOKEN_H
+#define TOKEN_H
 
 #include <string>
 #include <unordered_map>
 using tokenType = std::string;
-class Token {
-   public:
-    tokenType Type;
-    std::string Literal;
-    Token(const tokenType& type, const std::string& literal)
-        : Type(type), Literal(literal) {}
-};
 
 namespace TokenType {
 const std::string ILLEGAL = "ILLEGAL";
@@ -45,9 +40,22 @@ const std::string ELSE = "ELSE";
 const std::string RETURN = "RETURN";
 // Operators
 }  // namespace TokenType
+
+class Token {
+   public:
+    tokenType Type;
+    std::string Literal;
+    Token(const tokenType& type, const std::string& literal)
+        : Type(type), Literal(literal) {};
+    Token() : Type(TokenType::ILLEGAL), Literal("ILLEGAL") {};
+};
+
+//
 const std::unordered_map<std::string, std::string> keywords = {
     {"fn", TokenType::FUNCTION},   {"let", TokenType::LET},
     {"true", TokenType::TRUE},     {"false", TokenType::FALSE},
     {"if", TokenType::IF},         {"else", TokenType::ELSE},
     {"return", TokenType::RETURN},
 };
+
+#endif
