@@ -2,6 +2,7 @@
 #include <string>
 
 #include "token.h"
+
 class Lexer {
    public:
     Lexer(std::string input);
@@ -12,6 +13,8 @@ class Lexer {
     size_t position, readPosition;
     char currentChar;
     std::string readIdent();
+    std::string readNumber();
+    void skipWhitespace();
     void readChar();
     char peekChar();
 };

@@ -1,6 +1,8 @@
 #include "lexer.h"
 
+#include <cctype>
 #include <iostream>
+#include <string>
 
 // --------------------
 // -- Helper Methods --
@@ -16,6 +18,16 @@ Token createToken(tokenType type, char ch) {
 bool isLetter(char ch) {
     return (std::isalpha(ch) || ch == '_');  // Letters and underscore
 }
+
+// Check if token is a reserved keyword, if not return IDENT
+std::string lookupIdent(const std::string& ident) {
+    auto it = keywords.find(ident);
+    if (it != keywords.end()) {
+        return it->second;
+    }
+    return TokenType::IDENT;
+}
+
 // -----------------
 // -- Lexer Class --
 // -----------------
@@ -41,41 +53,103 @@ char Lexer::peekChar() {
 
 // Constructor for lexer
 Lexer::Lexer(std::string input)
-    : input(input), position(0), readPosition(0), currentChar('\0') {}
+    : input(input), position(0), readPosition(0), currentChar(' ') {}
+
+// Method to skip over whitespaces/tabs/returns
+void Lexer::skipWhitespace() {
+    while (currentChar == ' ' || currentChar == '\n' || currentChar == '\t' ||
+           currentChar == '\r') {
+        readChar();
+    }
+}
 
 // Method to read next token in the Lexer
 Token Lexer::nextToken() {
-    readChar();
+    skipWhitespace();
+    Token t = createToken(TokenType::ILLEGAL, currentChar);
     switch (currentChar) {
         case '=':
-            return createToken(TokenType::ASSIGN, currentChar);
+            if (peekChar() == '=') {
+                t = createToken(TokenType::EQ, "==");
+                readChar();
+            } else {
+                t.Type = TokenType::ASSIGN;
+            }
+            break;
+        case '!':
+            if (peekChar() == '=') {
+                t = createToken(TokenType::NOTEQ, "!=");
+                readChar();
+            } else {
+                t.Type = TokenType::BANG;
+            }
+            break;
         case ';':
-            return createToken(TokenType::SEMICOLON, currentChar);
+            t.Type = TokenType::SEMICOLON;
+            break;
         case '(':
-            return createToken(TokenType::LPAREN, currentChar);
+            t.Type = TokenType::LPAREN;
+            break;
         case ')':
-            return createToken(TokenType::RPAREN, currentChar);
+            t.Type = TokenType::RPAREN;
+            break;
         case '+':
-            return createToken(TokenType::PLUS, currentChar);
+            t.Type = TokenType::PLUS;
+            break;
+        case '-':
+            t.Type = TokenType::MINUS;
+            break;
+        case '/':
+            t.Type = TokenType::SLASH;
+            break;
+        case '*':
+            t.Type = TokenType::ASTERISK;
+            break;
+        case '<':
+            t.Type = TokenType::LT;
+            break;
+        case '>':
+            t.Type = TokenType::GT;
+            break;
         case '{':
-            return createToken(TokenType::LBRACE, currentChar);
+            t.Type = TokenType::LBRACE;
+            break;
         case '}':
-            return createToken(TokenType::RBRACE, currentChar);
+            t.Type = TokenType::RBRACE;
+            break;
         case ',':
-            return createToken(TokenType::COMMA, currentChar);
+            t.Type = TokenType::COMMA;
+            break;
         case '\0':
-            return createToken(TokenType::EoF, "");
+            t.Type = TokenType::EoF;
+            t.Literal = "";
+            break;
+        default:
+            if (isLetter(currentChar)) {
+                std::string literal = readIdent();
+                return createToken(lookupIdent(literal), literal);
+            }
+            if (std::isdigit(currentChar)) {
+                return createToken(TokenType::INT, readNumber());
+            }
     }
-    if (isLetter(currentChar)) {
-        std::string literal = readIdent();
-        return createToken(TokenType::ILLEGAL, literal);
-    }
-    return createToken(TokenType::ILLEGAL, currentChar);
+
+    readChar();
+
+    return t;
 }
 
 std::string Lexer::readIdent() {
     size_t pos = position;
     while (isLetter(currentChar)) {
+        readChar();
+    }
+    return input.substr(pos, position - pos);
+}
+
+std::string Lexer::readNumber() {
+    size_t pos = position;
+    while (std::isdigit(currentChar)) {
         readChar();
     }
     return input.substr(pos, position - pos);
